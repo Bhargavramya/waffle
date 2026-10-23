@@ -195,6 +195,7 @@ var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){r
 var clone=function(o){return JSON.parse(JSON.stringify(o))};
 var LS={get:function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},del:function(k){try{localStorage.removeItem(k)}catch(e){}}};
 
+var APP_VERSION='1.1';
 var LIVE=null,draft=null;
 var S={admin:location.hash==='#admin',q:'',cart:LS.get('ws_cart',{}),cust:Object.assign({name:'',phone:'',type:'pickup',address:'',when:'',note:''},LS.get('ws_cust',{})),
   parcel:LS.get('ws_parcel',true),sheet:null,editing:null,errors:{},busy:'',gh:LS.get('ws_gh',{owner:'',repo:'',branch:'main',token:''})};
@@ -259,7 +260,7 @@ function page(){
      ((m.events||[]).length?'<ul class="evl">'+m.events.map(function(e){return '<li>'+I('check')+esc(e)+'</li>'}).join('')+'</ul>':'')+
      '<p class="phone">'+esc(m.phone)+'</p><div class="btns"><a class="btn wa" href="'+esc(wa('Hello! I would like to enquire about an order for an event.'))+'" target="_blank" rel="noopener">'+I('wa')+'Enquire</a><a class="btn" href="tel:+'+esc(waNum(m.phone))+'">'+I('phone')+'Call</a>'+
      '<button type="button" class="btn red full" data-a="pdf"'+(S.busy?' disabled':'')+'>'+I('dl')+'Download full menu (PDF)</button></div></section>'+
-   '<p class="foot">'+esc(m.name)+(m.orders!==false&&Number(m.parcelFee)?' · Parcel '+esc(money(m.parcelFee))+' extra per item':'')+'</p>'+
+   '<p class="foot">'+esc(m.name)+(m.orders!==false&&Number(m.parcelFee)?' · Parcel '+esc(money(m.parcelFee))+' extra per item':'')+' · v'+APP_VERSION+'</p>'+
   '</div>'+orderBar();
 }
 function orderBar(){if(M().orders===false)return '';var t=totals();if(!t.n)return '';return '<div class="obar"><button type="button" data-a="sheet" data-v="order"><span>'+I('bag')+' '+t.n+(t.n===1?' item':' items')+'</span><span class="num">View order · '+esc(money(t.tot))+'</span></button></div>'}
@@ -284,7 +285,7 @@ function qrSheet(){return '<div class="sh"><h3>Scan for our menu</h3><button typ
 function af(path,label,val,o){o=o||{};return '<label class="f">'+label+(o.area?'<textarea data-f="'+path+'" id="f-'+path+'">'+esc(val)+'</textarea>':'<input data-f="'+path+'" id="f-'+path+'" type="'+(o.type||'text')+'"'+(o.im?' inputmode="'+o.im+'"':'')+' placeholder="'+esc(o.ph||'')+'" value="'+esc(val==null?'':val)+'">')+'</label>'}
 function adminPage(){
   var d=draft,g=S.gh;
-  return '<div class="wrap adm"><div class="ahead"><a class="sq" href="#" data-a="leave" aria-label="Back to menu">'+I('back')+'</a><h1>Menu editor</h1><button type="button" class="sq" data-a="pdf" aria-label="Download menu PDF">'+I('dl')+'</button></div>'+
+  return '<div class="wrap adm"><div class="ahead"><a class="sq" href="#" data-a="leave" aria-label="Back to menu">'+I('back')+'</a><h1>Menu editor <small style="font-size:13px;color:var(--faint)">v'+APP_VERSION+'</small></h1><button type="button" class="sq" data-a="pdf" aria-label="Download menu PDF">'+I('dl')+'</button></div>'+
    '<p class="hint">Changes are saved on this phone as you type. Tap <b>Publish</b> to update the live menu on GitHub; customers see it in about a minute.</p>'+
    '<section class="card box"><h2>Business</h2><div class="row">'+logo(d)+'<label class="btn" for="logoFile">'+I('img')+(d.logo?'Change logo':'Upload logo')+'</label><input type="file" id="logoFile" accept="image/*" hidden>'+(d.logo?'<button type="button" class="link" data-a="rmlogo">Remove</button>':'')+'</div>'+
     af('name','Business name',d.name)+af('tagline','Tagline',d.tagline)+'<div class="two">'+af('badge','Highlight',d.badge,{ph:'e.g. Pure Veg'})+af('phone','WhatsApp / phone',d.phone,{type:'tel',im:'tel'})+af('currency','Currency',d.currency)+af('parcelFee','Parcel fee per item',d.parcelFee,{type:'number',im:'numeric'})+'</div>'+
