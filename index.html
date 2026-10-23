@@ -195,9 +195,10 @@ var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){r
 var clone=function(o){return JSON.parse(JSON.stringify(o))};
 var LS={get:function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},del:function(k){try{localStorage.removeItem(k)}catch(e){}}};
 
-var APP_VERSION='1.4';
+var APP_VERSION='1.5';
 var LIVE=null,draft=null;
-var S={admin:location.hash==='#admin',q:'',cart:LS.get('ws_cart',{}),cust:Object.assign({name:'',phone:'',type:'pickup',address:'',when:'',note:''},LS.get('ws_cust',{})),
+var CUST=/[?&]menu\b/.test(location.search)||location.hash==='#menu';
+var S={admin:!CUST,preview:false,q:'',cart:LS.get('ws_cart',{}),cust:Object.assign({name:'',phone:'',type:'pickup',address:'',when:'',note:''},LS.get('ws_cust',{})),
   parcel:LS.get('ws_parcel',true),sheet:null,editing:null,errors:{},busy:'',gh:LS.get('ws_gh',{owner:'',repo:'',branch:'main',token:''})};
 function M(){return S.admin&&draft?draft:LIVE}
 function cur(){return M().currency||'₹'}
@@ -221,7 +222,7 @@ function digits(s){return String(s||'').replace(/\D/g,'')}
 function waNum(p){var d=digits(p);return d.length===10?'91'+d:d}
 function key(c,i,v){return c+'|'+i+'|'+v}
 var toastT;function toast(m){var el=$('#toast');if(!el){el=document.createElement('div');el.id='toast';el.className='toast';el.setAttribute('role','status');document.body.appendChild(el)}el.textContent=m;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){el.hidden=true},2600)}
-function siteUrl(){return location.origin+location.pathname}
+function siteUrl(){return location.origin+location.pathname+'?menu'}
 
 /* cart */
 function lines(){var m=LIVE,o=[];Object.keys(S.cart).forEach(function(k){var p=k.split('|'),c=m.categories.find(function(x){return x.id===p[0]}),it=c&&c.items.find(function(x){return x.id===p[1]}),vi=+p[2];if(!it||it.available===false||!(vi<c.variants.length)||!S.cart[k])return;o.push({k:k,c:c,it:it,vi:vi,q:S.cart[k],p:Number(it.prices[vi])||0})});return o}
@@ -261,7 +262,7 @@ function page(){
      '<p class="phone">'+esc(m.phone)+'</p><div class="btns"><a class="btn wa" href="'+esc(wa('Hello! I would like to enquire about an order for an event.'))+'" target="_blank" rel="noopener">'+I('wa')+'Enquire</a><a class="btn" href="tel:+'+esc(waNum(m.phone))+'">'+I('phone')+'Call</a>'+
      '<button type="button" class="btn red full" data-a="pdf"'+(S.busy?' disabled':'')+'>'+I('dl')+'Download full menu (PDF)</button></div></section>'+
    '<p class="foot">'+esc(m.name)+(m.orders!==false&&Number(m.parcelFee)?' · Parcel '+esc(money(m.parcelFee))+' extra per item':'')+'</p>'+
-  '</div>'+orderBar();
+  '</div>'+(S.preview?'<button type="button" class="btn red" data-a="backadm" style="position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:40;min-height:42px;box-shadow:var(--sh)">'+I('back')+'Back to Settings</button>':'')+orderBar();
 }
 function orderBar(){if(M().orders===false)return '';var t=totals();if(!t.n)return '';return '<div class="obar"><button type="button" data-a="sheet" data-v="order"><span>'+I('bag')+' '+t.n+(t.n===1?' item':' items')+'</span><span class="num">View order · '+esc(money(t.tot))+'</span></button></div>'}
 function fld(id,label,o){o=o||{};var e=S.errors[id],v=S.cust[id]||'';return '<label class="f'+(e?' err':'')+'">'+label+(o.area?'<textarea data-c="'+id+'" id="c-'+id+'" placeholder="'+esc(o.ph||'')+'">'+esc(v)+'</textarea>':'<input data-c="'+id+'" id="c-'+id+'" type="'+(o.type||'text')+'"'+(o.im?' inputmode="'+o.im+'"':'')+' autocomplete="'+(o.ac||'off')+'" placeholder="'+esc(o.ph||'')+'" value="'+esc(v)+'">')+(e?'<em>'+esc(e)+'</em>':'')+'</label>'}
@@ -285,8 +286,8 @@ function qrSheet(){return '<div class="sh"><h3>Scan for our menu</h3><button typ
 function af(path,label,val,o){o=o||{};return '<label class="f">'+label+(o.area?'<textarea data-f="'+path+'" id="f-'+path+'">'+esc(val)+'</textarea>':'<input data-f="'+path+'" id="f-'+path+'" type="'+(o.type||'text')+'"'+(o.im?' inputmode="'+o.im+'"':'')+' placeholder="'+esc(o.ph||'')+'" value="'+esc(val==null?'':val)+'">')+'</label>'}
 function adminPage(){
   var d=draft,g=S.gh;
-  return '<div class="wrap adm"><div class="ahead"><a class="sq" href="#" data-a="leave" aria-label="Back to menu">'+I('back')+'</a><h1>Settings <small style="font-size:13px;color:var(--faint)">v'+APP_VERSION+'</small></h1><button type="button" class="sq" data-a="pdf" aria-label="Download menu PDF">'+I('dl')+'</button></div>'+
-   '<div class="card box" style="box-shadow:var(--sh-sm)"><b>Your links</b><span class="hint">Customer link (in the QR code): <b>'+esc(siteUrl())+'</b></span><span class="hint">Owner link (keep private, bookmark it): <b>'+esc(siteUrl())+'#admin</b></span></div>'+
+  return '<div class="wrap adm"><div class="ahead"><a class="sq" href="#" data-a="leave" aria-label="Preview customer view">'+I('eye')+'</a><h1>Settings <small style="font-size:13px;color:var(--faint)">v'+APP_VERSION+'</small></h1><button type="button" class="sq" data-a="pdf" aria-label="Download menu PDF">'+I('dl')+'</button></div>'+
+   '<section class="card box"><h2>Share with customers</h2><div class="qr" id="admQr"></div><p class="hint" style="text-align:center;word-break:break-all">'+esc(siteUrl())+'</p><div class="btns"><button type="button" class="btn red" data-a="sharelink">'+I('wa')+'Share link</button><button type="button" class="btn" data-a="copylink">Copy link</button><button type="button" class="btn" data-a="qrpdf">'+I('dl')+'QR poster</button><button type="button" class="btn" data-a="leave">'+I('eye')+'Customer view</button></div><p class="hint">Customers who open this link see only the menu.</p></section>'+
    '<p class="hint">Changes are saved on this phone as you type. Tap <b>Publish</b> to update the live menu on GitHub; customers see it in about a minute.</p>'+
    '<section class="card box"><h2>Business</h2><div class="row">'+logo(d)+'<label class="btn" for="logoFile">'+I('img')+(d.logo?'Change logo':'Upload logo')+'</label><input type="file" id="logoFile" accept="image/*" hidden>'+(d.logo?'<button type="button" class="link" data-a="rmlogo">Remove</button>':'')+'</div>'+
     af('name','Business name',d.name)+af('tagline','Tagline',d.tagline)+'<div class="two">'+af('badge','Highlight',d.badge,{ph:'e.g. Pure Veg'})+af('phone','WhatsApp / phone',d.phone,{type:'tel',im:'tel'})+af('currency','Currency',d.currency)+af('parcelFee','Parcel fee per item',d.parcelFee,{type:'number',im:'numeric'})+'</div>'+
@@ -322,6 +323,7 @@ function render(keep){
   $('#app').innerHTML=(S.admin?adminPage():page())+(S.sheet?'<div class="scrim" data-a="scrim"><div class="sheet" role="dialog" aria-modal="true">'+(S.sheet==='order'?orderSheet():S.sheet==='qr'?qrSheet():editSheet())+'</div></div>':'');
   if(keep!==false)window.scrollTo(0,y);
   if(S.sheet==='qr')drawQr($('#qrBox'),siteUrl(),210);
+  if(S.admin)drawQr($('#admQr'),siteUrl(),210);
   document.title=M().name;
 }
 function refreshBar(){var p=$('.pubbar span'),b=$('[data-a=publish]');if(p)p.textContent=dirty()?'Unpublished changes':'Menu is up to date';if(b)b.disabled=!!S.busy||!dirty()}
@@ -434,7 +436,10 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-a]')
   case 'qrpdf':qrPdf();break;
   case 'pdf':downloadPdf();break;
   case 'reload':location.reload();break;
-  case 'leave':e.preventDefault();history.replaceState(null,'',location.pathname);S.admin=false;render(false);window.scrollTo(0,0);break;
+  case 'leave':e.preventDefault();S.admin=false;S.preview=true;render(false);window.scrollTo(0,0);break;
+  case 'backadm':S.admin=true;S.preview=false;render(false);window.scrollTo(0,0);break;
+  case 'copylink':try{navigator.clipboard.writeText(siteUrl()).then(function(){toast('Customer link copied')},function(){toast(siteUrl())})}catch(x){toast(siteUrl())}break;
+  case 'sharelink':if(navigator.share)navigator.share({title:M().name,text:M().name+' menu',url:siteUrl()}).catch(function(){});else window.open('https://wa.me/?text='+encodeURIComponent(M().name+' menu: '+siteUrl()),'_blank');break;
   case 'publish':publish();break;
   case 'export':var bl=new Blob([JSON.stringify(draft,null,1)],{type:'application/json'}),u=URL.createObjectURL(bl),an=document.createElement('a');an.href=u;an.download='menu.json';an.click();setTimeout(function(){URL.revokeObjectURL(u)},2000);break;
   case 'reset':if(b.dataset.sure){draft=clone(LIVE);LS.del('ws_draft');render()}else{b.dataset.sure=1;b.textContent='Tap again to discard';setTimeout(function(){if(b.isConnected){delete b.dataset.sure;b.textContent='Discard changes'}},3000)}break;
@@ -451,7 +456,7 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-a]')
   case 'saveItem':var E=S.editing,ec=catById(E.cid);if(!E.item.title.trim()){toast('Give the item a name.');return}E.item.title=E.item.title.trim();if(E.isNew)ec.items.push(E.item);else ec.items=ec.items.map(function(x){return x.id===E.item.id?E.item:x});S.editing=null;S.sheet=null;saveDraft();render();break;
   }
 });
-window.addEventListener('hashchange',function(){S.admin=location.hash==='#admin';render(false)});
+
 /* block double-tap & pinch zoom on iOS */
 var lastT=0;document.addEventListener('touchend',function(e){var n=Date.now();if(n-lastT<320&&!e.target.closest('input,textarea,select'))e.preventDefault();lastT=n},{passive:false});
 document.addEventListener('gesturestart',function(e){e.preventDefault()});
