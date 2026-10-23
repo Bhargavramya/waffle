@@ -7,6 +7,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Waffle Studio</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Nunito+Sans:opsz,wght@6..12,500;6..12,600;6..12,700;6..12,800&display=swap">
 <style>
@@ -205,7 +208,7 @@ var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){r
 var clone=function(o){return JSON.parse(JSON.stringify(o))};
 var LS={get:function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},del:function(k){try{localStorage.removeItem(k)}catch(e){}}};
 
-var APP_VERSION='1.8';
+var APP_VERSION='1.9';
 var LIVE=null,draft=null;
 var CUST=/[?&]menu\b/.test(location.search)||location.hash==='#menu';
 var S={owner:!CUST,admin:false,preview:false,q:'',cart:LS.get('ws_cart',{}),cust:Object.assign({name:'',phone:'',type:'pickup',address:'',when:'',note:''},LS.get('ws_cust',{})),
@@ -381,7 +384,7 @@ async function menuPages(m){
   return [cv];
 }
 function slug(m){return (m.name||'menu').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'menu'}
-function toPdf(pages,name){var doc=new jspdf.jsPDF({unit:'mm',format:'a4',compress:true});pages.forEach(function(p,i){if(i)doc.addPage();doc.addImage(p.toDataURL('image/jpeg',.9),'JPEG',0,0,210,297,undefined,'FAST')});doc.save(name)}
+function toPdf(pages,name){var doc=new jspdf.jsPDF({unit:'mm',format:'a4',compress:true});pages.forEach(function(p,i){if(i)doc.addPage();doc.addImage(p.toDataURL('image/jpeg',.9),'JPEG',0,0,210,297,undefined,'FAST')});if(window.AndroidBridge){AndroidBridge.saveFile(doc.output('datauristring').split(',')[1],name,'application/pdf')}else doc.save(name)}
 async function downloadPdf(){if(!window.jspdf){toast('PDF tool could not load. Check your internet.');return}if(S.busy)return;S.busy='pdf';render();try{toPdf(await menuPages(M()),slug(M())+'-menu.pdf');toast('Menu PDF downloaded')}catch(e){toast('Couldn’t make the PDF. Try again.')}S.busy='';render()}
 async function qrPdf(){if(!window.jspdf)return toast('PDF tool could not load.');await fonts();var m=M(),h=document.createElement('div'),qc=drawQr(h,siteUrl(),640);if(!qc)return;var lg=await loadImg(m.logo);
   var W=1240,Hh=1754,cv=document.createElement('canvas');cv.width=W;cv.height=Hh;var g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,W,Hh);g.fillStyle=RED;g.fillRect(0,0,W,18);
@@ -482,6 +485,7 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-a]')
 var lastT=0;document.addEventListener('touchend',function(e){var n=Date.now();if(n-lastT<320&&!e.target.closest('input,textarea,select'))e.preventDefault();lastT=n},{passive:false});
 document.addEventListener('gesturestart',function(e){e.preventDefault()});
 
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});
 /* ---------- boot with splash ---------- */
 function splash(m){var nm=$('#spName');nm.innerHTML=String(m.name).split('').map(function(ch,i){return '<span style="animation-delay:'+(.25+i*.045)+'s">'+(ch===' '?'&nbsp;':esc(ch))+'</span>'}).join('');$('#spTag').textContent=m.tagline||'';$('#spMark').innerHTML=m.logo?'<img src="'+esc(m.logo)+'" alt="">':'<span class="mono" style="box-shadow:none;background:none">'+esc(initials(m.name).toUpperCase())+'</span>'}
 (async function(){
