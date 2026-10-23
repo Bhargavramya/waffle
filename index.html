@@ -205,7 +205,7 @@ var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){r
 var clone=function(o){return JSON.parse(JSON.stringify(o))};
 var LS={get:function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},del:function(k){try{localStorage.removeItem(k)}catch(e){}}};
 
-var APP_VERSION='1.7';
+var APP_VERSION='1.8';
 var LIVE=null,draft=null;
 var CUST=/[?&]menu\b/.test(location.search)||location.hash==='#menu';
 var S={owner:!CUST,admin:false,preview:false,q:'',cart:LS.get('ws_cart',{}),cust:Object.assign({name:'',phone:'',type:'pickup',address:'',when:'',note:''},LS.get('ws_cust',{})),
@@ -259,12 +259,7 @@ function page(){
   return '<div class="wrap">'+
    '<header class="top"><div class="brand">'+logo(m)+'<div style="min-width:0;display:grid"><b>'+esc(m.name)+'</b><small style="font-size:12px;font-weight:700;color:var(--faint)">v'+APP_VERSION+'</small></div></div><div style="display:flex;gap:10px"><button type="button" class="sq" data-a="reload" aria-label="Reload menu">'+I('reload')+'</button>'+(S.owner?'<button type="button" class="sq" data-a="backadm" aria-label="Settings">'+I('gear')+'</button>':'')+'<button type="button" class="sq" data-a="qr" aria-label="Show QR code">'+I('qr')+'</button></div></header>'+
    '<section class="hero">'+(m.tagline?'<p>'+esc(m.tagline)+'</p>':'')+'<div class="chips">'+(m.badge?'<span class="chip">'+I('leaf')+esc(m.badge)+'</span>':'')+'</div></section>'+
-   '<nav class="card tiles" aria-label="Quick actions">'+
-     '<button type="button" class="tile main" data-a="pdf"'+(S.busy?' disabled':'')+'><span class="tbox">'+I('dl')+'</span>'+(S.busy==='pdf'?'Preparing…':'Menu PDF')+'</button>'+
-     '<a class="tile" href="'+esc(wa('Hello! I would like to place an order.'))+'" target="_blank" rel="noopener"><span class="tbox">'+I('wa')+'</span>WhatsApp</a>'+
-     '<a class="tile" href="tel:+'+esc(waNum(m.phone))+'"><span class="tbox">'+I('phone')+'</span>Call</a>'+
-     '<button type="button" class="tile" data-a="jump" data-v="events"><span class="tbox">'+I('cal')+'</span>Events</button></nav>'+
-   '<div class="bar"><label class="search">'+I('search')+'<input id="q" type="search" placeholder="Search the menu" autocomplete="off" value="'+esc(S.q)+'" aria-label="Search the menu"></label>'+
+      '<div class="bar"><label class="search">'+I('search')+'<input id="q" type="search" placeholder="Search the menu" autocomplete="off" value="'+esc(S.q)+'" aria-label="Search the menu"></label>'+
     (m.categories.length>1?'<div class="pills">'+m.categories.map(function(c){return '<button type="button" class="pill" data-a="jump" data-v="c-'+esc(c.id)+'">'+esc(c.name)+'</button>'}).join('')+'</div>':'')+'</div>'+
    '<div id="menu" style="display:grid;gap:26px">'+cats+'</div>'+
    '<section class="card info" id="events"><h2>Events &amp; bulk orders</h2>'+(m.banner?'<p class="lead">'+esc(m.banner)+'</p>':'')+
