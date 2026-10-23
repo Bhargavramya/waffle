@@ -7,3 +7,7 @@ Single-page menu app with −/+ ordering on WhatsApp, events, A4 menu PDF and QR
 - Menu data lives in `menu.json`, photos in `images/`.
 
 Enable hosting: repo Settings → Pages → Deploy from branch → `main` / root.
+
+## Releasing a new app version
+Bump `APP_VERSION` in `index.html` and `version` in `version.json` to the same number, then push.
+Settings → App update will show "Update to vX" on every owner device.
