@@ -33,7 +33,8 @@
      ],
      "best": true,
      "available": true,
-     "image": "images/w-1.jpg"
+     "image": "images/w-1.jpg",
+     "veg": true
     },
     {
      "id": "w-2",
@@ -45,7 +46,8 @@
      ],
      "best": false,
      "available": true,
-     "image": "images/w-2.jpg"
+     "image": "images/w-2.jpg",
+     "veg": true
     },
     {
      "id": "w-3",
@@ -57,7 +59,8 @@
      ],
      "best": false,
      "available": true,
-     "image": "images/w-3.jpg"
+     "image": "images/w-3.jpg",
+     "veg": true
     },
     {
      "id": "w-4",
@@ -69,7 +72,8 @@
      ],
      "best": true,
      "available": true,
-     "image": "images/w-4.jpg"
+     "image": "images/w-4.jpg",
+     "veg": true
     },
     {
      "id": "w-5",
@@ -81,7 +85,8 @@
      ],
      "best": false,
      "available": true,
-     "image": "images/w-5.jpg"
+     "image": "images/w-5.jpg",
+     "veg": true
     },
     {
      "id": "w-6",
@@ -93,7 +98,8 @@
      ],
      "best": true,
      "available": true,
-     "image": "images/w-6.jpg"
+     "image": "images/w-6.jpg",
+     "veg": true
     },
     {
      "id": "w-7",
@@ -105,7 +111,8 @@
      ],
      "best": true,
      "available": true,
-     "image": "images/w-7.jpg"
+     "image": "images/w-7.jpg",
+     "veg": true
     },
     {
      "id": "w-8",
@@ -117,7 +124,8 @@
      ],
      "best": true,
      "available": true,
-     "image": "images/w-8.jpg"
+     "image": "images/w-8.jpg",
+     "veg": true
     },
     {
      "id": "w-9",
@@ -129,7 +137,8 @@
      ],
      "best": false,
      "available": true,
-     "image": "images/w-9.jpg"
+     "image": "images/w-9.jpg",
+     "veg": true
     },
     {
      "id": "w-10",
@@ -141,9 +150,58 @@
      ],
      "best": false,
      "available": true,
-     "image": "images/w-10.jpg"
+     "image": "images/w-10.jpg",
+     "veg": true
+    }
+   ]
+  },
+  {
+   "id": "c-combos",
+   "name": "Combos & Offers",
+   "variants": [
+    ""
+   ],
+   "items": [
+    {
+     "id": "cb-1",
+     "title": "Any 2 Sticks",
+     "desc": "Pick any two stick waffles. Sample offer – edit in Settings.",
+     "prices": [
+      199
+     ],
+     "best": true,
+     "available": true,
+     "image": "images/w-7.jpg",
+     "veg": true
+    },
+    {
+     "id": "cb-2",
+     "title": "Family Puff Box (4)",
+     "desc": "Four puff waffles of your choice. Sample offer – edit in Settings.",
+     "prices": [
+      179
+     ],
+     "best": false,
+     "available": true,
+     "image": "images/w-10.jpg",
+     "veg": true
     }
    ]
   }
- ]
+ ],
+ "special": {
+  "on": true,
+  "text": "Buy any 2 Crunchy sticks, get a Dark Fantasy puff free"
+ },
+ "hours": {
+  "on": true,
+  "open": "11:00",
+  "close": "22:00",
+  "closedDays": []
+ },
+ "links": {
+  "maps": "",
+  "instagram": "",
+  "review": ""
+ }
 }
