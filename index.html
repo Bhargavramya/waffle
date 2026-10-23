@@ -195,7 +195,7 @@ var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){r
 var clone=function(o){return JSON.parse(JSON.stringify(o))};
 var LS={get:function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},del:function(k){try{localStorage.removeItem(k)}catch(e){}}};
 
-var APP_VERSION='1.2';
+var APP_VERSION='1.3';
 var LIVE=null,draft=null;
 var S={admin:location.hash==='#admin',q:'',cart:LS.get('ws_cart',{}),cust:Object.assign({name:'',phone:'',type:'pickup',address:'',when:'',note:''},LS.get('ws_cust',{})),
   parcel:LS.get('ws_parcel',true),sheet:null,editing:null,errors:{},busy:'',gh:LS.get('ws_gh',{owner:'',repo:'',branch:'main',token:''})};
@@ -286,6 +286,7 @@ function af(path,label,val,o){o=o||{};return '<label class="f">'+label+(o.area?'
 function adminPage(){
   var d=draft,g=S.gh;
   return '<div class="wrap adm"><div class="ahead"><a class="sq" href="#" data-a="leave" aria-label="Back to menu">'+I('back')+'</a><h1>Settings <small style="font-size:13px;color:var(--faint)">v'+APP_VERSION+'</small></h1><button type="button" class="sq" data-a="pdf" aria-label="Download menu PDF">'+I('dl')+'</button></div>'+
+   '<div class="card box" style="box-shadow:var(--sh-sm)"><b>Your links</b><span class="hint">Customer link (in the QR code): <b>'+esc(siteUrl())+'</b></span><span class="hint">Owner link (keep private, bookmark it): <b>'+esc(siteUrl())+'#admin</b></span></div>'+
    '<p class="hint">Changes are saved on this phone as you type. Tap <b>Publish</b> to update the live menu on GitHub; customers see it in about a minute.</p>'+
    '<section class="card box"><h2>Business</h2><div class="row">'+logo(d)+'<label class="btn" for="logoFile">'+I('img')+(d.logo?'Change logo':'Upload logo')+'</label><input type="file" id="logoFile" accept="image/*" hidden>'+(d.logo?'<button type="button" class="link" data-a="rmlogo">Remove</button>':'')+'</div>'+
     af('name','Business name',d.name)+af('tagline','Tagline',d.tagline)+'<div class="two">'+af('badge','Highlight',d.badge,{ph:'e.g. Pure Veg'})+af('phone','WhatsApp / phone',d.phone,{type:'tel',im:'tel'})+af('currency','Currency',d.currency)+af('parcelFee','Parcel fee per item',d.parcelFee,{type:'number',im:'numeric'})+'</div>'+
@@ -449,8 +450,6 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-a]')
   case 'saveItem':var E=S.editing,ec=catById(E.cid);if(!E.item.title.trim()){toast('Give the item a name.');return}E.item.title=E.item.title.trim();if(E.isNew)ec.items.push(E.item);else ec.items=ec.items.map(function(x){return x.id===E.item.id?E.item:x});S.editing=null;S.sheet=null;saveDraft();render();break;
   }
 });
-var lpT;document.addEventListener('pointerdown',function(e){if(S.admin||!e.target.closest('.top .brand'))return;lpT=setTimeout(function(){location.hash='admin'},1500)});['pointerup','pointercancel','pointerleave','scroll'].forEach(function(ev){document.addEventListener(ev,function(){clearTimeout(lpT)},true)});
-document.addEventListener('contextmenu',function(e){if(e.target.closest('.top .brand'))e.preventDefault()});
 window.addEventListener('hashchange',function(){S.admin=location.hash==='#admin';render(false)});
 /* block double-tap & pinch zoom on iOS */
 var lastT=0;document.addEventListener('touchend',function(e){var n=Date.now();if(n-lastT<320&&!e.target.closest('input,textarea,select'))e.preventDefault();lastT=n},{passive:false});
