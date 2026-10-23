@@ -159,6 +159,16 @@ h1,h2,h3,p{margin:0}
 [hidden]{display:none!important}
 
 /* admin */
+.adm .f input,.adm .f textarea{min-width:0}
+.adm .two{grid-template-columns:1fr 1fr}
+@media (max-width:520px){.adm .two{grid-template-columns:1fr}.box{padding:14px}.ahead h1{font-size:22px}.adm .btns{grid-template-columns:1fr}.adm .btns .btn{min-height:46px}}
+.vrowx{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;align-items:center}
+.vchip input{flex:1;min-width:0;width:auto!important}
+.arow{flex-wrap:wrap}.arow>div{flex:1 1 140px}
+.arow .acts{display:flex;gap:8px;margin-left:auto}
+.qr{max-width:100%}
+.qr img,.qr canvas{max-width:100%;height:auto}
+
 .adm{display:grid;gap:16px}
 .ahead{display:flex;align-items:center;gap:12px}
 .ahead h1{font-family:var(--head);font-weight:900;font-size:28px;flex:1}
@@ -195,10 +205,10 @@ var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){r
 var clone=function(o){return JSON.parse(JSON.stringify(o))};
 var LS={get:function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},del:function(k){try{localStorage.removeItem(k)}catch(e){}}};
 
-var APP_VERSION='1.6';
+var APP_VERSION='1.7';
 var LIVE=null,draft=null;
 var CUST=/[?&]menu\b/.test(location.search)||location.hash==='#menu';
-var S={admin:!CUST,preview:false,q:'',cart:LS.get('ws_cart',{}),cust:Object.assign({name:'',phone:'',type:'pickup',address:'',when:'',note:''},LS.get('ws_cust',{})),
+var S={owner:!CUST,admin:false,preview:false,q:'',cart:LS.get('ws_cart',{}),cust:Object.assign({name:'',phone:'',type:'pickup',address:'',when:'',note:''},LS.get('ws_cust',{})),
   parcel:LS.get('ws_parcel',true),sheet:null,editing:null,errors:{},busy:'',gh:LS.get('ws_gh',{owner:'',repo:'',branch:'main',token:''})};
 function M(){return S.admin&&draft?draft:LIVE}
 function cur(){return M().currency||'₹'}
@@ -212,7 +222,7 @@ var P={plus:'<path d="M12 5v14M5 12h14"/>',minus:'<path d="M5 12h14"/>',search:'
  x:'<path d="M6 6l12 12M18 6 6 18"/>',check:'<path d="m5 12 5 5 9-10"/>',leaf:'<path d="M5 19c0-8 6-14 15-14 0 9-6 15-14 15"/><path d="M5 19l7-7"/>',
  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',back:'<path d="m15 6-6 6 6 6"/>',
  bag:'<path d="M6 7h12l1 13H5z"/><path d="M9 7a3 3 0 0 1 6 0"/>',img:'<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-9 8"/>',
- eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',reload:'<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>',up:'<path d="M12 20V9M7 14l5-5 5 5M5 4h14"/>'};
+ eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',reload:'<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>',up:'<path d="M12 20V9M7 14l5-5 5 5M5 4h14"/>'};
 function I(n){return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+P[n]+'</svg>'}
 
 function initials(s){var w=String(s||'').trim().split(/\s+/);return ((w[0]||'')[0]||'')+((w[1]||'')[0]||'')}
@@ -247,7 +257,7 @@ function page(){
   }).join('');
   if(!any)cats='<p class="hint" style="text-align:center;padding:20px">'+(q?'Nothing matches “'+esc(S.q.trim())+'”.':'The menu is being updated.')+'</p>';
   return '<div class="wrap">'+
-   '<header class="top"><div class="brand">'+logo(m)+'<div style="min-width:0;display:grid"><b>'+esc(m.name)+'</b><small style="font-size:12px;font-weight:700;color:var(--faint)">v'+APP_VERSION+'</small></div></div><div style="display:flex;gap:10px"><button type="button" class="sq" data-a="reload" aria-label="Reload menu">'+I('reload')+'</button><button type="button" class="sq" data-a="qr" aria-label="Show QR code">'+I('qr')+'</button></div></header>'+
+   '<header class="top"><div class="brand">'+logo(m)+'<div style="min-width:0;display:grid"><b>'+esc(m.name)+'</b><small style="font-size:12px;font-weight:700;color:var(--faint)">v'+APP_VERSION+'</small></div></div><div style="display:flex;gap:10px"><button type="button" class="sq" data-a="reload" aria-label="Reload menu">'+I('reload')+'</button>'+(S.owner?'<button type="button" class="sq" data-a="backadm" aria-label="Settings">'+I('gear')+'</button>':'')+'<button type="button" class="sq" data-a="qr" aria-label="Show QR code">'+I('qr')+'</button></div></header>'+
    '<section class="hero">'+(m.tagline?'<p>'+esc(m.tagline)+'</p>':'')+'<div class="chips">'+(m.badge?'<span class="chip">'+I('leaf')+esc(m.badge)+'</span>':'')+'</div></section>'+
    '<nav class="card tiles" aria-label="Quick actions">'+
      '<button type="button" class="tile main" data-a="pdf"'+(S.busy?' disabled':'')+'><span class="tbox">'+I('dl')+'</span>'+(S.busy==='pdf'?'Preparing…':'Menu PDF')+'</button>'+
@@ -262,7 +272,7 @@ function page(){
      '<p class="phone">'+esc(m.phone)+'</p><div class="btns"><a class="btn wa" href="'+esc(wa('Hello! I would like to enquire about an order for an event.'))+'" target="_blank" rel="noopener">'+I('wa')+'Enquire</a><a class="btn" href="tel:+'+esc(waNum(m.phone))+'">'+I('phone')+'Call</a>'+
      '<button type="button" class="btn red full" data-a="pdf"'+(S.busy?' disabled':'')+'>'+I('dl')+'Download full menu (PDF)</button></div></section>'+
    '<p class="foot">'+esc(m.name)+(m.orders!==false&&Number(m.parcelFee)?' · Parcel '+esc(money(m.parcelFee))+' extra per item':'')+'</p>'+
-  '</div>'+(S.preview?'<button type="button" class="btn red" data-a="backadm" style="position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:40;min-height:42px;box-shadow:var(--sh)">'+I('back')+'Back to Settings</button>':'')+orderBar();
+  '</div>'+(false?'<button type="button" class="btn red" data-a="backadm" style="position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:40;min-height:42px;box-shadow:var(--sh)">'+I('back')+'Back to Settings</button>':'')+orderBar();
 }
 function orderBar(){if(M().orders===false)return '';var t=totals();if(!t.n)return '';return '<div class="obar"><button type="button" data-a="sheet" data-v="order"><span>'+I('bag')+' '+t.n+(t.n===1?' item':' items')+'</span><span class="num">View order · '+esc(money(t.tot))+'</span></button></div>'}
 function fld(id,label,o){o=o||{};var e=S.errors[id],v=S.cust[id]||'';return '<label class="f'+(e?' err':'')+'">'+label+(o.area?'<textarea data-c="'+id+'" id="c-'+id+'" placeholder="'+esc(o.ph||'')+'">'+esc(v)+'</textarea>':'<input data-c="'+id+'" id="c-'+id+'" type="'+(o.type||'text')+'"'+(o.im?' inputmode="'+o.im+'"':'')+' autocomplete="'+(o.ac||'off')+'" placeholder="'+esc(o.ph||'')+'" value="'+esc(v)+'">')+(e?'<em>'+esc(e)+'</em>':'')+'</label>'}
@@ -286,16 +296,16 @@ function qrSheet(){return '<div class="sh"><h3>Scan for our menu</h3><button typ
 function af(path,label,val,o){o=o||{};return '<label class="f">'+label+(o.area?'<textarea data-f="'+path+'" id="f-'+path+'">'+esc(val)+'</textarea>':'<input data-f="'+path+'" id="f-'+path+'" type="'+(o.type||'text')+'"'+(o.im?' inputmode="'+o.im+'"':'')+' placeholder="'+esc(o.ph||'')+'" value="'+esc(val==null?'':val)+'">')+'</label>'}
 function adminPage(){
   var d=draft,g=S.gh;
-  return '<div class="wrap adm"><div class="ahead"><a class="sq" href="#" data-a="leave" aria-label="Preview customer view">'+I('eye')+'</a><h1>Settings <small style="font-size:13px;color:var(--faint)">v'+APP_VERSION+'</small></h1><button type="button" class="sq" data-a="pdf" aria-label="Download menu PDF">'+I('dl')+'</button></div>'+
-   '<section class="card box"><h2>Share with customers</h2><div class="qr" id="admQr"></div><p class="hint" style="text-align:center;word-break:break-all">'+esc(siteUrl())+'</p><div class="btns"><button type="button" class="btn red" data-a="sharelink">'+I('wa')+'Share link</button><button type="button" class="btn" data-a="copylink">Copy link</button><button type="button" class="btn" data-a="qrpdf">'+I('dl')+'QR poster</button><button type="button" class="btn" data-a="leave">'+I('eye')+'Customer view</button></div><p class="hint">Customers who open this link see only the menu.</p></section>'+
+  return '<div class="wrap adm"><div class="ahead"><a class="sq" href="#" data-a="leave" aria-label="Back to menu">'+I('back')+'</a><h1>Settings <small style="font-size:13px;color:var(--faint)">v'+APP_VERSION+'</small></h1><button type="button" class="sq" data-a="pdf" aria-label="Download menu PDF">'+I('dl')+'</button></div>'+
+   '<section class="card box"><h2>Share with customers</h2><div class="qr" id="admQr"></div><p class="hint" style="text-align:center;word-break:break-all">'+esc(siteUrl())+'</p><div class="btns"><button type="button" class="btn red full" data-a="shareqr">'+I('wa')+'Share QR & link</button><button type="button" class="btn" data-a="copylink">Copy link</button><button type="button" class="btn" data-a="qrpdf">'+I('dl')+'QR poster</button></div><p class="hint">Customers who open this link see only the menu, with no Settings button.</p></section>'+
    '<p class="hint">Changes are saved on this phone as you type. Tap <b>Publish</b> to update the live menu on GitHub; customers see it in about a minute.</p>'+
    '<section class="card box"><h2>Business</h2><div class="row">'+logo(d)+'<label class="btn" for="logoFile">'+I('img')+(d.logo?'Change logo':'Upload logo')+'</label><input type="file" id="logoFile" accept="image/*" hidden>'+(d.logo?'<button type="button" class="link" data-a="rmlogo">Remove</button>':'')+'</div>'+
     af('name','Business name',d.name)+af('tagline','Tagline',d.tagline)+'<div class="two">'+af('badge','Highlight',d.badge,{ph:'e.g. Pure Veg'})+af('phone','WhatsApp / phone',d.phone,{type:'tel',im:'tel'})+af('currency','Currency',d.currency)+af('parcelFee','Parcel fee per item',d.parcelFee,{type:'number',im:'numeric'})+'</div>'+
     '<label class="tog">Allow ordering with − / + and WhatsApp<input type="checkbox" id="ordersOn"'+(d.orders!==false?' checked':'')+'></label></section>'+
    '<section class="card box"><div class="row" style="justify-content:space-between"><h2>Menu</h2><button type="button" class="btn" data-a="addCat">'+I('plus')+'Category</button></div>'+
     d.categories.map(function(c){return '<div class="card box" style="box-shadow:var(--sh-sm)">'+af('cat:'+c.id,'Category name',c.name)+
-      '<div class="f">Sizes / options<div class="row">'+c.variants.map(function(v,vi){return '<span class="vchip"><input data-f="var:'+c.id+':'+vi+'" id="v-'+c.id+'-'+vi+'" value="'+esc(v)+'" placeholder="e.g. Regular" style="width:110px;border:0;outline:none;background:var(--card);box-shadow:var(--in);border-radius:12px;padding:10px;font-size:16px;font-weight:700">'+(c.variants.length>1?'<button type="button" class="mini del" data-a="delVar" data-c="'+c.id+'" data-i="'+vi+'" aria-label="Remove option">'+I('x')+'</button>':'')+'</span>'}).join('')+(c.variants.length<3?'<button type="button" class="link" data-a="addVar" data-c="'+c.id+'">+ Option</button>':'')+'</div></div>'+
-      c.items.map(function(it){return '<div class="arow">'+pic(it)+'<div><b>'+esc(it.title||'Untitled')+(it.available===false?' · hidden':'')+'</b><small class="num">'+esc(c.variants.map(function(v,i){var p=it.prices[i];return (c.variants.length>1?v+' ':'')+(p===''||p==null?'—':money(p))}).join(' · '))+'</small></div><button type="button" class="mini" data-a="avail" data-c="'+c.id+'" data-i="'+it.id+'" aria-label="Show or hide today">'+I('eye')+'</button><button type="button" class="mini" data-a="edit" data-c="'+c.id+'" data-i="'+it.id+'" aria-label="Edit">'+I('edit')+'</button><button type="button" class="mini del" data-a="delItem" data-c="'+c.id+'" data-i="'+it.id+'" aria-label="Delete">'+I('trash')+'</button></div>'}).join('')+
+      '<div class="f">Sizes / options<div class="vrowx">'+c.variants.map(function(v,vi){return '<span class="vchip"><input data-f="var:'+c.id+':'+vi+'" id="v-'+c.id+'-'+vi+'" value="'+esc(v)+'" placeholder="e.g. Regular" style="width:110px;border:0;outline:none;background:var(--card);box-shadow:var(--in);border-radius:12px;padding:10px;font-size:16px;font-weight:700">'+(c.variants.length>1?'<button type="button" class="mini del" data-a="delVar" data-c="'+c.id+'" data-i="'+vi+'" aria-label="Remove option">'+I('x')+'</button>':'')+'</span>'}).join('')+(c.variants.length<3?'<button type="button" class="link" data-a="addVar" data-c="'+c.id+'">+ Option</button>':'')+'</div></div>'+
+      c.items.map(function(it){return '<div class="arow">'+pic(it)+'<div><b>'+esc(it.title||'Untitled')+(it.available===false?' · hidden':'')+'</b><small class="num">'+esc(c.variants.map(function(v,i){var p=it.prices[i];return (c.variants.length>1?v+' ':'')+(p===''||p==null?'—':money(p))}).join(' · '))+'</small></div><span class="acts"><button type="button" class="mini" data-a="avail" data-c="'+c.id+'" data-i="'+it.id+'" aria-label="Show or hide today">'+I('eye')+'</button><button type="button" class="mini" data-a="edit" data-c="'+c.id+'" data-i="'+it.id+'" aria-label="Edit">'+I('edit')+'</button><button type="button" class="mini del" data-a="delItem" data-c="'+c.id+'" data-i="'+it.id+'" aria-label="Delete">'+I('trash')+'</button></span></div>'}).join('')+
       '<div class="row" style="justify-content:space-between"><button type="button" class="btn red" data-a="addItem" data-c="'+c.id+'">'+I('plus')+'Add item</button>'+(d.categories.length>1?'<button type="button" class="link" data-a="delCat" data-c="'+c.id+'">Delete category</button>':'')+'</div></div>'}).join('')+'</section>'+
    '<section class="card box"><h2>Events</h2>'+af('banner','Announcement',d.banner)+af('events','Events you cater for (one per line)',(d.events||[]).join('\n'),{area:1})+'</section>'+
    '<section class="card box"><h2>GitHub publishing</h2><p class="hint">One-time setup. Your token stays only on this phone.</p><div class="two">'+
@@ -452,7 +462,7 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-a]')
   case 'shareqr':shareQr();break;
   case 'pdf':downloadPdf();break;
   case 'reload':location.reload();break;
-  case 'leave':e.preventDefault();S.admin=false;S.preview=true;render(false);window.scrollTo(0,0);break;
+  case 'leave':e.preventDefault();S.admin=false;render(false);window.scrollTo(0,0);break;
   case 'backadm':S.admin=true;S.preview=false;render(false);window.scrollTo(0,0);break;
   case 'copylink':try{navigator.clipboard.writeText(siteUrl()).then(function(){toast('Customer link copied')},function(){toast(siteUrl())})}catch(x){toast(siteUrl())}break;
   case 'sharelink':if(navigator.share)navigator.share({title:M().name,text:M().name+' menu',url:siteUrl()}).catch(function(){});else window.open('https://wa.me/?text='+encodeURIComponent(M().name+' menu: '+siteUrl()),'_blank');break;
