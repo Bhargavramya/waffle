@@ -53,7 +53,7 @@ h1,h2,h3,p{margin:0}
 
 /* header */
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 12px 12px 16px;background:var(--raise);border-radius:24px;box-shadow:var(--sh)}
-.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;display:flex;align-items:center;gap:12px;min-width:0}
 .logo{width:46px;height:46px;border-radius:15px;object-fit:cover;flex:none;background:var(--card);box-shadow:var(--sh-sm)}
 .mono{width:46px;height:46px;border-radius:15px;flex:none;display:grid;place-items:center;background:var(--card);box-shadow:var(--sh-sm);color:var(--red);font-family:var(--head);font-weight:900;font-size:18px}
 .brand b{font-family:var(--head);font-weight:800;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--red)}
@@ -195,7 +195,7 @@ var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){r
 var clone=function(o){return JSON.parse(JSON.stringify(o))};
 var LS={get:function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},del:function(k){try{localStorage.removeItem(k)}catch(e){}}};
 
-var APP_VERSION='1.1';
+var APP_VERSION='1.2';
 var LIVE=null,draft=null;
 var S={admin:location.hash==='#admin',q:'',cart:LS.get('ws_cart',{}),cust:Object.assign({name:'',phone:'',type:'pickup',address:'',when:'',note:''},LS.get('ws_cust',{})),
   parcel:LS.get('ws_parcel',true),sheet:null,editing:null,errors:{},busy:'',gh:LS.get('ws_gh',{owner:'',repo:'',branch:'main',token:''})};
@@ -285,7 +285,7 @@ function qrSheet(){return '<div class="sh"><h3>Scan for our menu</h3><button typ
 function af(path,label,val,o){o=o||{};return '<label class="f">'+label+(o.area?'<textarea data-f="'+path+'" id="f-'+path+'">'+esc(val)+'</textarea>':'<input data-f="'+path+'" id="f-'+path+'" type="'+(o.type||'text')+'"'+(o.im?' inputmode="'+o.im+'"':'')+' placeholder="'+esc(o.ph||'')+'" value="'+esc(val==null?'':val)+'">')+'</label>'}
 function adminPage(){
   var d=draft,g=S.gh;
-  return '<div class="wrap adm"><div class="ahead"><a class="sq" href="#" data-a="leave" aria-label="Back to menu">'+I('back')+'</a><h1>Menu editor <small style="font-size:13px;color:var(--faint)">v'+APP_VERSION+'</small></h1><button type="button" class="sq" data-a="pdf" aria-label="Download menu PDF">'+I('dl')+'</button></div>'+
+  return '<div class="wrap adm"><div class="ahead"><a class="sq" href="#" data-a="leave" aria-label="Back to menu">'+I('back')+'</a><h1>Settings <small style="font-size:13px;color:var(--faint)">v'+APP_VERSION+'</small></h1><button type="button" class="sq" data-a="pdf" aria-label="Download menu PDF">'+I('dl')+'</button></div>'+
    '<p class="hint">Changes are saved on this phone as you type. Tap <b>Publish</b> to update the live menu on GitHub; customers see it in about a minute.</p>'+
    '<section class="card box"><h2>Business</h2><div class="row">'+logo(d)+'<label class="btn" for="logoFile">'+I('img')+(d.logo?'Change logo':'Upload logo')+'</label><input type="file" id="logoFile" accept="image/*" hidden>'+(d.logo?'<button type="button" class="link" data-a="rmlogo">Remove</button>':'')+'</div>'+
     af('name','Business name',d.name)+af('tagline','Tagline',d.tagline)+'<div class="two">'+af('badge','Highlight',d.badge,{ph:'e.g. Pure Veg'})+af('phone','WhatsApp / phone',d.phone,{type:'tel',im:'tel'})+af('currency','Currency',d.currency)+af('parcelFee','Parcel fee per item',d.parcelFee,{type:'number',im:'numeric'})+'</div>'+
@@ -337,30 +337,40 @@ function H(w,s){return w+' '+s+'px Archivo, Arial, sans-serif'}function B(w,s){r
 async function fonts(){try{await Promise.all([document.fonts.load(H(900,60)),document.fonts.load(H(800,30)),document.fonts.load(B(700,22)),document.fonts.load(B(600,20))])}catch(e){}}
 function drawLogo(g,m,cx,cy,r,im){g.save();rr(g,cx-r,cy-r,2*r,2*r,r*.32);g.clip();if(im){var s=Math.max(2*r/im.naturalWidth,2*r/im.naturalHeight);g.drawImage(im,cx-im.naturalWidth*s/2,cy-im.naturalHeight*s/2,im.naturalWidth*s,im.naturalHeight*s)}else{g.fillStyle=TINT;g.fillRect(cx-r,cy-r,2*r,2*r);g.fillStyle=RED;g.font=H(900,Math.round(r*.75));g.textAlign='center';g.textBaseline='middle';g.fillText(initials(m.name).toUpperCase(),cx,cy+2);g.textBaseline='alphabetic'}g.restore()}
 async function menuPages(m){
-  await fonts();var W=1240,Hh=1754,PAD=96,pages=[],g,y,imgs={},lg=await loadImg(m.logo);
-  await Promise.all([].concat.apply([],m.categories.map(function(c){return c.items})).map(function(it){return loadImg(it.image).then(function(i){imgs[it.id]=i})}));
-  function np(first){var cv=document.createElement('canvas');cv.width=W;cv.height=Hh;g=cv.getContext('2d');pages.push(cv);g.fillStyle='#fff';g.fillRect(0,0,W,Hh);g.fillStyle=RED;g.fillRect(0,0,W,14);g.textAlign='left';
-    if(first){drawLogo(g,m,PAD+60,150,60,lg);g.fillStyle=INK;g.font=H(900,58);g.fillText(fit(g,m.name,W-PAD*2-150),PAD+150,148);g.font=B(600,25);g.fillStyle=SOFT;g.fillText(fit(g,m.tagline||'',W-PAD*2-150),PAD+150,190);
-      var bits=[m.badge,m.phone?'WhatsApp / Call: '+m.phone:''].filter(Boolean).join('   •   ');g.font=B(800,22);g.fillStyle=RED;g.fillText(bits,PAD,282);g.fillStyle=RULE;g.fillRect(PAD,306,W-2*PAD,2);y=380}
-    else{g.font=H(800,30);g.fillStyle=INK;g.fillText(m.name,PAD,100);g.fillStyle=RULE;g.fillRect(PAD,122,W-2*PAD,2);y=190}}
-  var LIM=Hh-130,PH=150;np(true);
-  m.categories.forEach(function(c){var its=c.items.filter(function(i){return i.available!==false});if(!its.length)return;var nv=c.variants.length,COL=140,cx=function(i){return W-PAD-(nv-1-i)*COL};
-    function ch(cont){g.textAlign='left';g.fillStyle=INK;g.font=H(800,cont?28:38);g.fillText(c.name+(cont?' (continued)':''),PAD,y);g.textAlign='right';g.fillStyle=RED;g.font=H(800,20);if(nv>1||c.variants[0])c.variants.forEach(function(v,i){g.fillText(v.toUpperCase(),cx(i),y)});y+=40}
-    if(y+60+PH>LIM)np(false);ch(false);
-    its.forEach(function(it){if(y+PH+24>LIM){np(false);ch(true)}var tx=PAD+PH+28,tw=W-PAD-nv*COL-tx-20,im=imgs[it.id];
-      if(im)cover(g,im,PAD,y,PH,PH,22);else{rr(g,PAD,y,PH,PH,22);g.fillStyle=TINT;g.fill();g.fillStyle=RED;g.font=H(900,60);g.textAlign='center';g.fillText((it.title||'?').charAt(0),PAD+PH/2,y+PH/2+22)}
-      g.textAlign='left';g.fillStyle=INK;g.font=B(800,31);g.fillText(fit(g,it.title,tw),tx,y+42);var ly=y+42;
-      if(it.best){g.fillStyle=RED;g.font=B(800,18);g.fillText('★ BESTSELLER',tx,y+72);ly=y+72}
-      g.fillStyle=SOFT;g.font=B(600,22);wrapT(g,it.desc,tw,it.best?2:3).forEach(function(l,i){g.fillText(l,tx,ly+34+i*30)});
-      g.textAlign='right';g.fillStyle=INK;g.font=H(800,30);c.variants.forEach(function(v,i){var p=it.prices[i];g.fillText(p===''||p==null?'—':(m.currency||'₹')+p,cx(i),y+42)});
-      y+=PH+12;g.fillStyle=RULE;g.fillRect(PAD,y,W-2*PAD,1.5);y+=14});y+=30});
-  if(y+200>Hh-80)np(false);var fy=Math.max(y+10,Hh-280);g.fillStyle=TINT;rr(g,PAD,fy,W-2*PAD,190,28);g.fill();g.textAlign='center';
-  if(m.banner){g.fillStyle=RED;g.font=H(800,30);g.fillText(fit(g,m.banner,W-2*PAD-60),W/2,fy+62)}
-  g.fillStyle=INK;g.font=B(800,28);g.fillText('WhatsApp / Call: '+m.phone,W/2,fy+110);
-  if((m.events||[]).length){g.fillStyle=SOFT;g.font=B(600,21);g.fillText(fit(g,'Events: '+m.events.join(' · '),W-2*PAD-60),W/2,fy+150)}
-  if(m.orders!==false&&Number(m.parcelFee)){g.fillStyle=SOFT;g.font=B(600,19);g.fillText('Parcel: '+(m.currency||'₹')+m.parcelFee+' extra per item',W/2,fy+178)}
-  if(pages.length>1)pages.forEach(function(p,i){var q=p.getContext('2d');q.textAlign='right';q.fillStyle=SOFT;q.font=B(600,18);q.fillText((i+1)+' / '+pages.length,W-PAD,Hh-50)});
-  return pages;
+  await fonts();var W=1240,Hh=1754,PAD=70,cy=m.currency||'₹',imgs={},lg=await loadImg(m.logo);
+  var cats=m.categories.map(function(c){return {c:c,its:c.items.filter(function(i){return i.available!==false})}}).filter(function(x){return x.its.length});
+  await Promise.all([].concat.apply([],cats.map(function(x){return x.its})).map(function(it){return loadImg(it.image).then(function(i){imgs[it.id]=i})}));
+  var cv=document.createElement('canvas');cv.width=W;cv.height=Hh;var g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,W,Hh);g.fillStyle=RED;g.fillRect(0,0,W,12);
+  /* header */
+  drawLogo(g,m,PAD+52,110,52,lg);g.textAlign='left';g.fillStyle=INK;g.font=H(900,50);g.fillText(fit(g,m.name,W-PAD*2-130),PAD+125,108);
+  g.font=B(600,22);g.fillStyle=SOFT;g.fillText(fit(g,m.tagline||'',W-PAD*2-130),PAD+125,145);
+  g.textAlign='right';g.fillStyle=RED;g.font=B(800,20);g.fillText(m.badge||'',W-PAD,72);
+  g.fillStyle=RULE;g.fillRect(PAD,190,W-2*PAD,2);
+  /* layout: 2 columns, size rows to fit one page */
+  var top=222,FOOT=130,bottom=Hh-FOOT-40,CATH=50,GAP=10;
+  var rows=0;cats.forEach(function(x){rows+=Math.ceil(x.its.length/2)});
+  var rowH=Math.max(64,Math.min(190,(bottom-top-cats.length*CATH-rows*GAP)/Math.max(1,rows)));
+  var k=rowH/190,colW=(W-2*PAD-24)/2,y=top;
+  cats.forEach(function(x){
+    var c=x.c;g.textAlign='left';g.fillStyle=INK;g.font=H(800,Math.round(30*Math.max(.8,k)));g.fillText(c.name,PAD,y+30);g.fillStyle=RED;g.fillRect(PAD,y+40,60,3);y+=CATH;
+    x.its.forEach(function(it,i){
+      var col=i%2,cx=PAD+col*(colW+24),ry=y+Math.floor(i/2)*(rowH+GAP),ph=rowH-16,im=imgs[it.id];
+      rr(g,cx,ry,colW,rowH,18);g.fillStyle='#fbf5f3';g.fill();
+      if(im)cover(g,im,cx+8,ry+8,ph,ph,14);else{rr(g,cx+8,ry+8,ph,ph,14);g.fillStyle=TINT;g.fill()}
+      var tx=cx+ph+24,tw=colW-ph-36;g.textAlign='left';
+      g.fillStyle=INK;g.font=B(800,Math.round(26*Math.max(.72,k)));var t1=ry+Math.round(rowH*.3)+6;g.fillText(fit(g,it.title+(it.best?'  ★':''),tw),tx,t1);
+      var fs=Math.round(18*Math.max(.75,k));g.fillStyle=SOFT;g.font=B(600,fs);var dl=k>.6?wrapT(g,it.desc,tw,k>.85?2:1):[];dl.forEach(function(l,j){g.fillText(l,tx,t1+fs+8+j*(fs+4))});
+      var pr=c.variants.map(function(v,vi){var p=it.prices[vi];return p===''||p==null?'':((c.variants.length>1&&v?v+' ':'')+cy+p)}).filter(Boolean).join('   ');
+      g.fillStyle=RED;g.font=H(800,Math.round(22*Math.max(.75,k)));g.fillText(fit(g,pr,tw),tx,ry+rowH-Math.round(18*Math.max(.7,k)));
+    });
+    y+=Math.ceil(x.its.length/2)*(rowH+GAP);
+  });
+  /* footer */
+  var fy=Hh-FOOT-20;rr(g,PAD,fy,W-2*PAD,FOOT-10,22);g.fillStyle=TINT;g.fill();g.textAlign='center';
+  g.fillStyle=RED;g.font=H(800,26);g.fillText(fit(g,m.banner||'',W-2*PAD-40),W/2,fy+42);
+  g.fillStyle=INK;g.font=B(800,24);g.fillText('WhatsApp / Call: '+m.phone+(m.orders!==false&&Number(m.parcelFee)?'   •   Parcel '+cy+m.parcelFee+' extra per item':''),W/2,fy+78);
+  if((m.events||[]).length){g.fillStyle=SOFT;g.font=B(600,18);g.fillText(fit(g,'We cater for: '+m.events.join(' · '),W-2*PAD-40),W/2,fy+106)}
+  return [cv];
 }
 function slug(m){return (m.name||'menu').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'menu'}
 function toPdf(pages,name){var doc=new jspdf.jsPDF({unit:'mm',format:'a4',compress:true});pages.forEach(function(p,i){if(i)doc.addPage();doc.addImage(p.toDataURL('image/jpeg',.9),'JPEG',0,0,210,297,undefined,'FAST')});doc.save(name)}
@@ -439,6 +449,8 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-a]')
   case 'saveItem':var E=S.editing,ec=catById(E.cid);if(!E.item.title.trim()){toast('Give the item a name.');return}E.item.title=E.item.title.trim();if(E.isNew)ec.items.push(E.item);else ec.items=ec.items.map(function(x){return x.id===E.item.id?E.item:x});S.editing=null;S.sheet=null;saveDraft();render();break;
   }
 });
+var lpT;document.addEventListener('pointerdown',function(e){if(S.admin||!e.target.closest('.top .brand'))return;lpT=setTimeout(function(){location.hash='admin'},1500)});['pointerup','pointercancel','pointerleave','scroll'].forEach(function(ev){document.addEventListener(ev,function(){clearTimeout(lpT)},true)});
+document.addEventListener('contextmenu',function(e){if(e.target.closest('.top .brand'))e.preventDefault()});
 window.addEventListener('hashchange',function(){S.admin=location.hash==='#admin';render(false)});
 /* block double-tap & pinch zoom on iOS */
 var lastT=0;document.addEventListener('touchend',function(e){var n=Date.now();if(n-lastT<320&&!e.target.closest('input,textarea,select'))e.preventDefault();lastT=n},{passive:false});
