@@ -195,7 +195,7 @@ var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){r
 var clone=function(o){return JSON.parse(JSON.stringify(o))};
 var LS={get:function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},del:function(k){try{localStorage.removeItem(k)}catch(e){}}};
 
-var APP_VERSION='1.5';
+var APP_VERSION='1.6';
 var LIVE=null,draft=null;
 var CUST=/[?&]menu\b/.test(location.search)||location.hash==='#menu';
 var S={admin:!CUST,preview:false,q:'',cart:LS.get('ws_cart',{}),cust:Object.assign({name:'',phone:'',type:'pickup',address:'',when:'',note:''},LS.get('ws_cust',{})),
@@ -280,7 +280,7 @@ function orderSheet(){
    '<a class="btn wa" id="send" data-a="send" href="'+esc(wa(orderMsg()))+'" target="_blank" rel="noopener">'+I('wa')+'Send order on WhatsApp</a>'+
    '<p class="hint" style="text-align:center">Your order is confirmed when we reply on WhatsApp. <button type="button" class="link" data-a="clear">Clear order</button></p>';
 }
-function qrSheet(){return '<div class="sh"><h3>Scan for our menu</h3><button type="button" class="mini" data-a="close" aria-label="Close">'+I('x')+'</button></div><div class="qr" id="qrBox"></div><p class="hint" style="text-align:center">Opens this menu on any phone.</p><div class="btns"><button type="button" class="btn red full" data-a="qrpdf">'+I('dl')+'Download QR poster (A4)</button></div>'}
+function qrSheet(){return '<div class="sh"><h3>Scan for our menu</h3><button type="button" class="mini" data-a="close" aria-label="Close">'+I('x')+'</button></div><div class="qr" id="qrBox"></div><p class="hint" style="text-align:center">Opens this menu on any phone.</p><div class="btns"><button type="button" class="btn red full" data-a="shareqr">'+I('wa')+'Share QR & link</button><button type="button" class="btn" data-a="copylink">Copy link</button><button type="button" class="btn" data-a="qrpdf">'+I('dl')+'QR poster</button></div>'}
 
 /* ---------- admin ---------- */
 function af(path,label,val,o){o=o||{};return '<label class="f">'+label+(o.area?'<textarea data-f="'+path+'" id="f-'+path+'">'+esc(val)+'</textarea>':'<input data-f="'+path+'" id="f-'+path+'" type="'+(o.type||'text')+'"'+(o.im?' inputmode="'+o.im+'"':'')+' placeholder="'+esc(o.ph||'')+'" value="'+esc(val==null?'':val)+'">')+'</label>'}
@@ -384,6 +384,21 @@ async function qrPdf(){if(!window.jspdf)return toast('PDF tool could not load.')
   g.drawImage(qc,W/2-320,540,640,640);g.fillStyle=RED;g.font=H(900,52);g.fillText('Scan for our menu',W/2,1290);g.fillStyle=SOFT;g.font=B(700,30);g.fillText('Menu  •  Order  •  Events',W/2,1345);
   g.fillStyle=INK;g.font=B(800,40);g.fillText('WhatsApp / Call: '+m.phone,W/2,1460);toPdf([cv],slug(m)+'-qr-poster.pdf')}
 
+async function shareQr(){
+  var m=M(),url=siteUrl(),text=m.name+' menu – scan the QR or open: '+url;
+  try{await fonts();var h=document.createElement('div'),qc=drawQr(h,url,600);if(!qc)throw 0;
+    var W=800,Hh=1000,cv=document.createElement('canvas');cv.width=W;cv.height=Hh;var g=cv.getContext('2d');
+    g.fillStyle='#ffffff';g.fillRect(0,0,W,Hh);g.fillStyle=RED;g.fillRect(0,0,W,14);
+    g.textAlign='center';g.fillStyle=INK;g.font=H(900,52);g.fillText(fit(g,m.name,W-80),W/2,100);
+    g.font=B(700,26);g.fillStyle=SOFT;g.fillText('Scan for our menu',W/2,145);
+    g.drawImage(qc,100,190,600,600);g.fillStyle=RED;g.font=B(800,22);g.fillText(fit(g,url,W-60),W/2,850);
+    g.fillStyle=INK;g.font=B(800,28);g.fillText('WhatsApp / Call: '+m.phone,W/2,910);
+    var blob=await new Promise(function(r){cv.toBlob(r,'image/png')});var file=new File([blob],slug(m)+'-menu-qr.png',{type:'image/png'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:m.name,text:text});return}
+  }catch(e){if(e&&e.name==='AbortError')return}
+  if(navigator.share){try{await navigator.share({title:m.name,text:text,url:url})}catch(e){}return}
+  window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+}
 /* ---------- photos & GitHub ---------- */
 function shrink(file,max,png){return new Promise(function(res,rej){var u=URL.createObjectURL(file),i=new Image();i.onload=function(){var s=Math.min(1,max/Math.max(i.naturalWidth,i.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(i.naturalWidth*s);c.height=Math.round(i.naturalHeight*s);c.getContext('2d').drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL(png?'image/png':'image/jpeg',.84))};i.onerror=function(){URL.revokeObjectURL(u);rej()};i.src=u})}
 function gh(path,opt){var g=S.gh;return fetch('https://api.github.com/repos/'+encodeURIComponent(g.owner)+'/'+encodeURIComponent(g.repo)+'/contents/'+path+(opt&&opt.method==='PUT'?'':'?ref='+encodeURIComponent(g.branch)),Object.assign({headers:{'Authorization':'Bearer '+g.token,'Accept':'application/vnd.github+json'}},opt||{}))}
@@ -434,6 +449,7 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-a]')
   case 'jump':var t=document.getElementById(v);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});break;
   case 'qr':S.sheet='qr';render();break;
   case 'qrpdf':qrPdf();break;
+  case 'shareqr':shareQr();break;
   case 'pdf':downloadPdf();break;
   case 'reload':location.reload();break;
   case 'leave':e.preventDefault();S.admin=false;S.preview=true;render(false);window.scrollTo(0,0);break;
