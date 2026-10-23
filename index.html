@@ -195,7 +195,7 @@ var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){r
 var clone=function(o){return JSON.parse(JSON.stringify(o))};
 var LS={get:function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},del:function(k){try{localStorage.removeItem(k)}catch(e){}}};
 
-var APP_VERSION='1.3';
+var APP_VERSION='1.4';
 var LIVE=null,draft=null;
 var S={admin:location.hash==='#admin',q:'',cart:LS.get('ws_cart',{}),cust:Object.assign({name:'',phone:'',type:'pickup',address:'',when:'',note:''},LS.get('ws_cust',{})),
   parcel:LS.get('ws_parcel',true),sheet:null,editing:null,errors:{},busy:'',gh:LS.get('ws_gh',{owner:'',repo:'',branch:'main',token:''})};
@@ -211,7 +211,7 @@ var P={plus:'<path d="M12 5v14M5 12h14"/>',minus:'<path d="M5 12h14"/>',search:'
  x:'<path d="M6 6l12 12M18 6 6 18"/>',check:'<path d="m5 12 5 5 9-10"/>',leaf:'<path d="M5 19c0-8 6-14 15-14 0 9-6 15-14 15"/><path d="M5 19l7-7"/>',
  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',back:'<path d="m15 6-6 6 6 6"/>',
  bag:'<path d="M6 7h12l1 13H5z"/><path d="M9 7a3 3 0 0 1 6 0"/>',img:'<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-9 8"/>',
- eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',up:'<path d="M12 20V9M7 14l5-5 5 5M5 4h14"/>'};
+ eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',reload:'<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>',up:'<path d="M12 20V9M7 14l5-5 5 5M5 4h14"/>'};
 function I(n){return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+P[n]+'</svg>'}
 
 function initials(s){var w=String(s||'').trim().split(/\s+/);return ((w[0]||'')[0]||'')+((w[1]||'')[0]||'')}
@@ -246,8 +246,8 @@ function page(){
   }).join('');
   if(!any)cats='<p class="hint" style="text-align:center;padding:20px">'+(q?'Nothing matches “'+esc(S.q.trim())+'”.':'The menu is being updated.')+'</p>';
   return '<div class="wrap">'+
-   '<header class="top"><div class="brand">'+logo(m)+'<div style="min-width:0;display:grid"><b>'+esc(m.name)+'</b><small style="font-size:12px;font-weight:700;color:var(--faint)">v'+APP_VERSION+'</small></div></div><button type="button" class="sq" data-a="qr" aria-label="Show QR code">'+I('qr')+'</button></header>'+
-   '<section class="hero"><span class="date">'+esc(date)+'</span><h1>'+esc(m.name)+'</h1>'+(m.tagline?'<p>'+esc(m.tagline)+'</p>':'')+'<div class="chips">'+(m.badge?'<span class="chip">'+I('leaf')+esc(m.badge)+'</span>':'')+(m.phone?'<span class="chip">'+I('phone')+'<span class="num">'+esc(m.phone)+'</span></span>':'')+'</div></section>'+
+   '<header class="top"><div class="brand">'+logo(m)+'<div style="min-width:0;display:grid"><b>'+esc(m.name)+'</b><small style="font-size:12px;font-weight:700;color:var(--faint)">v'+APP_VERSION+'</small></div></div><div style="display:flex;gap:10px"><button type="button" class="sq" data-a="reload" aria-label="Reload menu">'+I('reload')+'</button><button type="button" class="sq" data-a="qr" aria-label="Show QR code">'+I('qr')+'</button></div></header>'+
+   '<section class="hero">'+(m.tagline?'<p>'+esc(m.tagline)+'</p>':'')+'<div class="chips">'+(m.badge?'<span class="chip">'+I('leaf')+esc(m.badge)+'</span>':'')+'</div></section>'+
    '<nav class="card tiles" aria-label="Quick actions">'+
      '<button type="button" class="tile main" data-a="pdf"'+(S.busy?' disabled':'')+'><span class="tbox">'+I('dl')+'</span>'+(S.busy==='pdf'?'Preparing…':'Menu PDF')+'</button>'+
      '<a class="tile" href="'+esc(wa('Hello! I would like to place an order.'))+'" target="_blank" rel="noopener"><span class="tbox">'+I('wa')+'</span>WhatsApp</a>'+
@@ -433,6 +433,7 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-a]')
   case 'qr':S.sheet='qr';render();break;
   case 'qrpdf':qrPdf();break;
   case 'pdf':downloadPdf();break;
+  case 'reload':location.reload();break;
   case 'leave':e.preventDefault();history.replaceState(null,'',location.pathname);S.admin=false;render(false);window.scrollTo(0,0);break;
   case 'publish':publish();break;
   case 'export':var bl=new Blob([JSON.stringify(draft,null,1)],{type:'application/json'}),u=URL.createObjectURL(bl),an=document.createElement('a');an.href=u;an.download='menu.json';an.click();setTimeout(function(){URL.revokeObjectURL(u)},2000);break;
